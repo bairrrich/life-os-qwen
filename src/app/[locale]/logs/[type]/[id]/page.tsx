@@ -729,10 +729,10 @@ export default function LogDetailPage() {
                     className={`font-bold text-center text-[32px] ${
                       type === "finance" && log.metadata
                         ? (log.metadata as any).finance_type === "income"
-                          ? "text-[oklch(0.74_0.30_138)]"
+                          ? "text-[var(--color-success)]"
                           : (log.metadata as any).finance_type === "expense"
-                            ? "text-destructive"
-                            : "text-[oklch(0.65_0.25_260)]" // Синий для переводов
+                            ? "text-[var(--color-danger)]"
+                            : "text-[var(--color-info)]"
                         : ""
                     }`}
                   >

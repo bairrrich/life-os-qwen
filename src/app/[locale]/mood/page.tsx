@@ -332,7 +332,7 @@ export default function MoodPage() {
                 <div className="flex gap-4">
                   <div className="text-center">
                     <Battery
-                      className={`h-5 w-5 mx-auto mb-1 ${todayMood.energy >= 3 ? "text-[oklch(0.74_0.30_138)]" : "text-[oklch(0.80_0.28_18)]"}`}
+                      className={`h-5 w-5 mx-auto mb-1 ${todayMood.energy >= 3 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}`}
                     />
                     <span className="text-sm">{todayMood.energy}/5</span>
                   </div>
@@ -401,7 +401,7 @@ export default function MoodPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-2">
-                    <Moon className="h-5 w-5 text-[oklch(0.66_0.28_278)]" />
+                    <Moon className="h-5 w-5 text-[var(--color-accent)]" />
                     <span className="text-sm">{t("correlations.sleep")}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -454,7 +454,7 @@ export default function MoodPage() {
                                   : t("correlations.weakNegative")}
                     </span>
                     {correlations.water.trend === "up" && (
-                      <TrendingUp className="h-4 w-4 text-[oklch(0.74_0.30_138)]" />
+                      <TrendingUp className="h-4 w-4 text-[var(--color-success)]" />
                     )}
                     {correlations.water.trend === "down" && (
                       <TrendingDown className={`h-4 w-4 ${statusColors.error.icon}`} />
@@ -467,7 +467,7 @@ export default function MoodPage() {
 
                 <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-2">
-                    <Dumbbell className="h-5 w-5 text-[oklch(0.76_0.28_68)]" />
+                    <Dumbbell className="h-5 w-5 text-[var(--color-accent)]" />
                     <span className="text-sm">{t("correlations.workout")}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -487,7 +487,7 @@ export default function MoodPage() {
                                   : t("correlations.weakNegative")}
                     </span>
                     {correlations.workout.trend === "up" && (
-                      <TrendingUp className="h-4 w-4 text-[oklch(0.74_0.30_138)]" />
+                      <TrendingUp className="h-4 w-4 text-[var(--color-success)]" />
                     )}
                     {correlations.workout.trend === "down" && (
                       <TrendingDown className={`h-4 w-4 ${statusColors.error.icon}`} />

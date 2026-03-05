@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { db, initializeDatabase } from "@/lib/db"
 import type { RecipeContentExtended, RecipeIngredientItem, RecipeStep } from "@/types"
 import { RecipeType } from "@/types"
-import { recipeColors } from "@/lib/theme-colors"
+import { recipeColors, recipeTypeTabsColors } from "@/lib/theme-colors"
 import { cn } from "@/lib/utils"
 
 // Типы фильтров - label будет получен через t()
@@ -34,11 +34,9 @@ interface RecipeWithDetails extends RecipeContentExtended {
 
 // Цвета для типов рецептов (как статусы у книг)
 const recipeTypeColors: Record<string, string> = {
-  food: "bg-[oklch(0.88_0.22_68)]/15 text-[oklch(0.88_0.22_68)] border-[oklch(0.76_0.28_68)/0.45]",
-  drink:
-    "bg-[oklch(0.82_0.24_208)]/15 text-[oklch(0.82_0.24_208)] border-[oklch(0.70_0.30_208)/0.45]",
-  cocktail:
-    "bg-[oklch(0.72_0.26_295)]/15 text-[oklch(0.72_0.26_295)] border-[oklch(0.72_0.26_295)/0.45]",
+  food: `${recipeColors.food.light} ${recipeColors.food.text} border-[var(--color-warning)/0.45]`,
+  drink: `${recipeColors.drink.light} ${recipeColors.drink.text} border-[var(--color-info)/0.45]`,
+  cocktail: `${recipeColors.cocktail.light} ${recipeColors.cocktail.text} border-[var(--color-accent)/0.45]`,
 }
 
 export default function RecipesPage() {
@@ -127,23 +125,12 @@ export default function RecipesPage() {
       case RecipeType.COCKTAIL:
         return recipeColors.cocktail.light
       default:
-        return "bg-[oklch(0.72_0.14_255)]/10 text-[oklch(0.58_0.18_255)]"
+        return "bg-[var(--color-text-soft)/0.10] text-[var(--color-text-soft)]"
     }
   }
 
   const getTabsTriggerColor = (type: RecipeType | "all") => {
-    switch (type) {
-      case "all":
-        return ""
-      case RecipeType.FOOD:
-        return "data-[state=active]:bg-[oklch(0.76_0.28_68)] data-[state=active]:text-white"
-      case RecipeType.DRINK:
-        return "data-[state=active]:bg-[oklch(0.70_0.30_218)] data-[state=active]:text-white"
-      case RecipeType.COCKTAIL:
-        return "data-[state=active]:bg-[oklch(0.72_0.26_295)] data-[state=active]:text-white"
-      default:
-        return ""
-    }
+    return recipeTypeTabsColors[type as keyof typeof recipeTypeTabsColors] || ""
   }
 
   return (

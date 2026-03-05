@@ -103,22 +103,22 @@ export const uiBase = {
 ========================================================= */
 
 export const accentColor: ColorScheme = {
-  light: soft("var(--color-accent)"),
-  DEFAULT: solid("var(--color-accent)"),
-  text: "text-[var(--color-accent)]",
-  border: border("var(--color-accent)"),
+  light: soft("var(--color-warning)"),
+  DEFAULT: solid("var(--color-warning)"),
+  text: "text-[var(--color-warning)]",
+  border: border("var(--color-warning)"),
   shadow:
-    "shadow-[0_6px_20px_var(--color-accent)/0.35]",
+    "shadow-[0_6px_20px_var(--color-warning)/0.35]",
 }
 
 /* FAB */
 
 export const fabColor = {
-  light: "bg-[var(--color-accent-soft)]",
-  DEFAULT: "bg-[var(--color-accent)]",
+  light: "bg-[var(--color-warning)/0.20]",
+  DEFAULT: "bg-[var(--color-warning)]",
   text: "text-white",
   shadow:
-    "shadow-[0_10px_30px_var(--color-accent)/0.45]",
+    "shadow-[0_10px_30px_var(--color-warning)/0.45]",
 }
 
 /* =========================================================
@@ -387,7 +387,33 @@ export const bodyColors = {
   },
 }
 
-/* Book Status (legacy - text only) */
+/* Item Type Tabs */
+export const itemTypeTabsColors = {
+  all: "",
+  vitamin: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  medicine: "data-[state=active]:bg-[var(--color-danger)] data-[state=active]:text-white",
+  herb: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  cosmetic: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
+  product: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+}
+
+/* Book Status Tabs */
+export const bookStatusTabsColors = {
+  all: "",
+  reading: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  completed: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  planned: "data-[state=active]:bg-[var(--color-text-soft)] data-[state=active]:text-white",
+  paused: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  dropped: "data-[state=active]:bg-[var(--color-text-soft)] data-[state=active]:text-white",
+}
+
+/* Recipe Type Tabs */
+export const recipeTypeTabsColors = {
+  all: "",
+  food: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  drink: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  cocktail: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
+}
 export const bookStatusColorsLegacy = {
   reading: "text-[var(--color-info)]",
   completed: "text-[var(--color-success)]",
@@ -462,6 +488,14 @@ export const logTypeColors = {
   finance_income: statusColors.success,
   finance_expense: statusColors.danger,
   finance_transfer: statusColors.info,
+}
+
+/* Log Type Tabs */
+export const logTypeTabsColors = {
+  all: "",
+  food: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  workout: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  finance: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
 }
 
 /* Mood */
@@ -551,7 +585,7 @@ export const statColors = {
   light: "bg-[var(--color-text-soft)/0.15]",
   DEFAULT: "bg-[var(--color-text-soft)/0.25]",
   text: "text-[var(--color-text-soft)]",
-  food: "text-[var(--color-accent)]",
+  food: "text-[var(--color-warning)]",
   workout: "text-[var(--color-info)]",
   finance: "text-[var(--color-success)]",
 }

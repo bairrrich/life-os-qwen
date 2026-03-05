@@ -216,10 +216,10 @@ function GoalProgressWidget({
         max={goal}
         size={70}
         strokeWidth={5}
-        color={isComplete ? "stroke-[oklch(0.74_0.30_138)]" : color}
+        color={isComplete ? "stroke-[var(--color-success)]" : color}
       >
         <Icon
-          className={`h-5 w-5 ${isComplete ? "text-[oklch(0.74_0.30_138)]" : color.replace("stroke-", "text-")}`}
+          className={`h-5 w-5 ${isComplete ? "text-[var(--color-success)]" : color.replace("stroke-", "text-")}`}
         />
       </CircularProgress>
       <div className="text-center">
@@ -228,7 +228,7 @@ function GoalProgressWidget({
         </div>
         <div className="text-xs text-muted-foreground">{unit}</div>
         <div
-          className={`text-xs font-medium ${isComplete ? "text-[oklch(0.74_0.30_138)]" : "text-muted-foreground"}`}
+          className={`text-xs font-medium ${isComplete ? "text-[var(--color-success)]" : "text-muted-foreground"}`}
         >
           {percentage}%
         </div>
@@ -451,7 +451,7 @@ export default function HomePage() {
               <Card>
                 <CardContent className="p-3 text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Utensils className="h-4 w-4 text-[oklch(0.76_0.28_68)]" />
+                    <Utensils className="h-4 w-4 text-[var(--color-accent)]" />
                     <span className="text-xs text-muted-foreground">{t("calories")}</span>
                   </div>
                   <div className="text-xl font-bold">{stats.todayCalories || "-"}</div>
@@ -460,7 +460,7 @@ export default function HomePage() {
               <Card>
                 <CardContent className="p-3 text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Timer className="h-4 w-4 text-[oklch(0.78_0.26_208)]" />
+                    <Timer className="h-4 w-4 text-[var(--color-info)]" />
                     <span className="text-xs text-muted-foreground">{t("minutes")}</span>
                   </div>
                   <div className="text-xl font-bold">{stats.todayWorkoutMinutes || "-"}</div>
@@ -469,7 +469,7 @@ export default function HomePage() {
               <Card>
                 <CardContent className="p-3 text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <DollarSign className="h-4 w-4 text-[oklch(0.74_0.30_138)]" />
+                    <DollarSign className="h-4 w-4 text-[var(--color-success)]" />
                     <span className="text-xs text-muted-foreground">{t("expense")}</span>
                   </div>
                   <div className="text-xl font-bold">
@@ -501,7 +501,7 @@ export default function HomePage() {
                   className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl ${moduleColors[action.module].light}`}
                   aria-hidden="true"
                 >
-                  <action.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-white`} />
+                  <action.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${moduleColors[action.module].text}`} />
                 </div>
                 <span className="text-xs sm:text-sm font-medium">
                   {tNav(action.translationKey)}
@@ -557,7 +557,7 @@ export default function HomePage() {
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${moduleColors[tracker.module].light}`}
                   aria-hidden="true"
                 >
-                  <tracker.icon className={`h-5 w-5 text-white`} />
+                  <tracker.icon className={`h-5 w-5 ${moduleColors[tracker.module].text}`} />
                 </div>
                 <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
                   {tNav(tracker.translationKey)}
@@ -600,7 +600,7 @@ export default function HomePage() {
                           className={`flex h-9 w-9 items-center justify-center rounded-xl ${colors.light}`}
                           aria-hidden="true"
                         >
-                          <TypeIcon className="h-4 w-4 text-white" />
+                          <TypeIcon className={`h-4 w-4 ${colors.text}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-sm truncate">
@@ -620,7 +620,13 @@ export default function HomePage() {
                           </p>
                         </div>
                         {log.value !== undefined && (
-                          <div className="text-sm font-medium">
+                          <div className={`text-sm font-medium ${
+                            log.type === "finance" && log.metadata?.finance_type === "income"
+                              ? "text-[var(--color-success)]"
+                              : log.type === "finance" && log.metadata?.finance_type === "expense"
+                                ? "text-[var(--color-danger)]"
+                                : ""
+                          }`}>
                             {log.type === "finance"
                               ? `${log.value.toLocaleString()} ${tCommon("unit.RUB")}`
                               : log.value}

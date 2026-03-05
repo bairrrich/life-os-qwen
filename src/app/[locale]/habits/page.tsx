@@ -370,7 +370,7 @@ function HabitsContent() {
                 <div className="text-sm text-muted-foreground">{t("fields.isActive")}</div>
               </div>
               <div className="flex items-center gap-2">
-                <Flame className="h-8 w-8 text-[oklch(0.76_0.28_68)]" />
+                <Flame className="h-8 w-8 text-[var(--color-accent)]" />
                 <div>
                   <div className="text-2xl font-bold">
                     {Math.max(...streaks.map((s) => s.current_streak), 0)}
@@ -417,7 +417,7 @@ function HabitsContent() {
                       <Button
                         variant={isCompleted ? "default" : "outline"}
                         size="icon"
-                        className={`h-12 w-12 rounded-full ${isCompleted ? `${habitStatusColors.completed.DEFAULT} hover:bg-[oklch(0.64_0.30_138)]` : ""}`}
+                        className={`h-12 w-12 rounded-full ${isCompleted ? `${habitStatusColors.completed.DEFAULT} hover:bg-[var(--color-success)]` : ""}`}
                         onClick={() => toggleHabit(habit.id)}
                         aria-label={
                           isCompleted ? t("actions.markIncomplete") : t("actions.markComplete")
@@ -426,7 +426,7 @@ function HabitsContent() {
                         {isCompleted ? (
                           <Check className="h-6 w-6" />
                         ) : todayLog?.skipped_reason ? (
-                          <AlertCircle className="h-6 w-6 text-[oklch(0.80_0.28_18)]" />
+                          <AlertCircle className="h-6 w-6 text-[var(--color-danger)]" />
                         ) : (
                           <X className="h-6 w-6 text-muted-foreground" />
                         )}
@@ -445,7 +445,7 @@ function HabitsContent() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                           {streak && streak.current_streak > 0 && (
                             <>
-                              <Flame className="h-4 w-4 text-[oklch(0.76_0.28_68)]" />
+                              <Flame className="h-4 w-4 text-[var(--color-accent)]" />
                               <span>
                                 {streak.current_streak} {t("days")}
                               </span>
@@ -505,7 +505,7 @@ function HabitsContent() {
                             }}
                             aria-label={t("actions.skipHabit")}
                           >
-                            <AlertCircle className="h-4 w-4 text-[oklch(0.80_0.28_18)]" />
+                            <AlertCircle className="h-4 w-4 text-[var(--color-warning)]" />
                           </Button>
                         )}
                         <Button
@@ -524,7 +524,7 @@ function HabitsContent() {
                       {weekCompletion.map((day, i) => (
                         <div key={i} className="flex flex-col items-center gap-1">
                           <span
-                            className={`text-xs ${day.isWeekend ? "text-[oklch(0.88_0.22_68)/0.70]" : "text-muted-foreground"}`}
+                            className={`text-xs ${day.isWeekend ? "text-[var(--color-accent)]/70" : "text-muted-foreground"}`}
                           >
                             {dayNames[i]}
                           </span>

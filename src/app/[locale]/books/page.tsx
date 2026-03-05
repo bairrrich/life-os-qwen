@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { db, initializeDatabase } from "@/lib/db"
 import { statusColors } from "@/components/books"
-import { bookColors } from "@/lib/theme-colors"
+import { bookColors, bookStatusTabsColors } from "@/lib/theme-colors"
 import { cn } from "@/lib/utils"
 import type { Book, UserBook, Author, BookAuthor, ReadingStatus } from "@/types"
 
@@ -141,7 +141,7 @@ export default function BooksPage() {
             </div>
           </Card>
           <Card className="p-2 sm:p-3 text-center">
-            <div className={cn("text-xl sm:text-2xl font-bold", bookColors.completed)}>
+            <div className={cn("text-xl sm:text-2xl font-bold", bookColors.completed.text)}>
               {stats.completed}
             </div>
             <div className="text-[10px] sm:text-xs text-muted-foreground">
@@ -150,14 +150,14 @@ export default function BooksPage() {
             </div>
           </Card>
           <Card className="p-2 sm:p-3 text-center">
-            <div className="text-xl sm:text-2xl font-bold text-gray-500">{stats.planned}</div>
+            <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-soft)]">{stats.planned}</div>
             <div className="text-[10px] sm:text-xs text-muted-foreground">
               <span className="hidden sm:inline">{t("list.stats.planned")}</span>
               <span className="sm:hidden">{t("list.stats.planned")}</span>
             </div>
           </Card>
           <Card className="p-2 sm:p-3 text-center">
-            <div className={cn("text-xl sm:text-2xl font-bold", bookColors.paused)}>
+            <div className={cn("text-xl sm:text-2xl font-bold", bookColors.paused.text)}>
               {stats.paused}
             </div>
             <div className="text-[10px] sm:text-xs text-muted-foreground">
@@ -183,7 +183,7 @@ export default function BooksPage() {
                 <TabsTrigger
                   key={filter.value}
                   value={filter.value}
-                  className="text-xs sm:text-sm px-1 sm:px-3 py-2 flex items-center gap-1"
+                  className={cn("text-xs sm:text-sm px-1 sm:px-3 py-2 flex items-center gap-1", bookStatusTabsColors[filter.value as keyof typeof bookStatusTabsColors])}
                   role="tab"
                   aria-selected={activeStatus === filter.value}
                   aria-controls={`panel-${filter.value}`}

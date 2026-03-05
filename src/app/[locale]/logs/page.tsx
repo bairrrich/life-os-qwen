@@ -15,7 +15,7 @@ import { LogType } from "@/types"
 import type { Log } from "@/types"
 import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
-import { logTypeColors, statColors } from "@/lib/theme-colors"
+import { logTypeColors, logTypeTabsColors, statColors } from "@/lib/theme-colors"
 
 export default function LogsPage() {
   const t = useTranslations("logs")
@@ -85,18 +85,7 @@ export default function LogsPage() {
   }
 
   const getTabsListColor = (type: LogType | "all"): string => {
-    switch (type) {
-      case "all":
-        return ""
-      case "food":
-        return "data-[state=active]:bg-[oklch(0.76_0.28_68)] data-[state=active]:text-white"
-      case "workout":
-        return "data-[state=active]:bg-[oklch(0.70_0.30_218)] data-[state=active]:text-white"
-      case "finance":
-        return "data-[state=active]:bg-[oklch(0.73_0.28_145)] data-[state=active]:text-white"
-      default:
-        return ""
-    }
+    return logTypeTabsColors[type as keyof typeof logTypeTabsColors] || ""
   }
 
   const getTypeIcon = (type: LogType): LucideIcon => {
@@ -303,10 +292,10 @@ export default function LogsPage() {
                                   className={`text-sm font-medium ${
                                     log.type === "finance" && log.metadata
                                       ? (log.metadata as any).finance_type === "income"
-                                        ? "text-[oklch(0.74_0.30_138)]"
+                                        ? "text-[var(--color-success)]"
                                         : (log.metadata as any).finance_type === "expense"
-                                          ? "text-destructive"
-                                          : "text-[oklch(0.65_0.25_260)]"
+                                          ? "text-[var(--color-danger)]"
+                                          : "text-[var(--color-info)]"
                                       : ""
                                   }`}
                                 >

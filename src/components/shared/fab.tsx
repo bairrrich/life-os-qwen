@@ -47,118 +47,118 @@ export function FAB() {
 
   const actions: FabAction[] = [
     {
-      icon: <Utensils className="h-5 w-5" />,
+      icon: <Utensils className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("food"),
       href: "/logs/food/new",
       module: "food",
       action: "navigate" as const,
     },
     {
-      icon: <Dumbbell className="h-5 w-5" />,
+      icon: <Dumbbell className="h-5 w-5 text-[var(--color-info)]" />,
       label: t("workout"),
       href: "/logs/workout/new",
       module: "workout",
       action: "navigate" as const,
     },
     {
-      icon: <Wallet className="h-5 w-5" />,
+      icon: <Wallet className="h-5 w-5 text-[var(--color-success)]" />,
       label: t("finance"),
       href: "/logs/finance/new",
       module: "finance",
       action: "navigate" as const,
     },
     {
-      icon: <Droplet className="h-5 w-5" />,
+      icon: <Droplet className="h-5 w-5 text-[var(--color-info)]" />,
       label: t("water"),
       href: "/water?add=true",
       module: "water",
       action: "navigate" as const,
     },
     {
-      icon: <Moon className="h-5 w-5" />,
+      icon: <Moon className="h-5 w-5 text-[var(--color-success)]" />,
       label: t("sleep"),
       href: "/sleep?add=true",
       module: "sleep",
       action: "navigate" as const,
     },
     {
-      icon: <Smile className="h-5 w-5" />,
+      icon: <Smile className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("mood"),
       module: "mood",
       action: "mood" as const,
     },
     {
-      icon: <Ruler className="h-5 w-5" />,
+      icon: <Ruler className="h-5 w-5 text-[var(--color-accent)]" />,
       label: t("measurements"),
       href: "/body?add=true",
       module: "goals",
       action: "navigate" as const,
     },
     {
-      icon: <Flame className="h-5 w-5" />,
+      icon: <Flame className="h-5 w-5 text-[var(--color-success)]" />,
       label: t("habit"),
       href: "/habits?add=true",
       module: "habits",
       action: "navigate" as const,
     },
     {
-      icon: <Target className="h-5 w-5" />,
+      icon: <Target className="h-5 w-5 text-[var(--color-accent)]" />,
       label: t("goal"),
       href: "/goals?add=true",
       module: "goals",
       action: "navigate" as const,
     },
     {
-      icon: <Bell className="h-5 w-5" />,
+      icon: <Bell className="h-5 w-5 text-[var(--color-info)]" />,
       label: t("reminder"),
       href: "/reminders?add=true",
       module: "logs",
       action: "navigate" as const,
     },
     {
-      icon: <BookOpen className="h-5 w-5" />,
+      icon: <BookOpen className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("book"),
       href: "/books/new",
       module: "books",
       action: "navigate" as const,
     },
     {
-      icon: <ChefHat className="h-5 w-5" />,
+      icon: <ChefHat className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("recipe"),
       href: "/recipes/new",
       module: "recipes",
       action: "navigate" as const,
     },
     {
-      icon: <Pill className="h-5 w-5" />,
+      icon: <Pill className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("vitamins"),
       href: "/items/vitamin/new",
       module: "habits",
       action: "navigate" as const,
     },
     {
-      icon: <PillBottle className="h-5 w-5" />,
+      icon: <PillBottle className="h-5 w-5 text-[var(--color-danger)]" />,
       label: t("medicine"),
       href: "/items/medicine/new",
       module: "mood",
       action: "navigate" as const,
     },
     {
-      icon: <Leaf className="h-5 w-5" />,
+      icon: <Leaf className="h-5 w-5 text-[var(--color-success)]" />,
       label: t("herbs"),
       href: "/items/herb/new",
       module: "food",
       action: "navigate" as const,
     },
     {
-      icon: <Sparkles className="h-5 w-5" />,
+      icon: <Sparkles className="h-5 w-5 text-[var(--color-warning)]" />,
       label: t("cosmetics"),
       href: "/items/cosmetic/new",
       module: "mood",
       action: "navigate" as const,
     },
     {
-      icon: <ShoppingCart className="h-5 w-5" />,
+      icon: <ShoppingCart className="h-5 w-5 text-[var(--color-info)]" />,
       label: t("products"),
       href: "/items/product/new",
       module: "food",
@@ -195,14 +195,17 @@ export function FAB() {
                 // Determine color scheme: use itemColors for item-type actions, otherwise moduleColors
                 const isItemAction = action.href?.startsWith("/items/")
                 let bgColorClass: string
+                let iconColorClass: string
 
                 if (isItemAction && action.href) {
                   // Extract item type from href (e.g., "/items/vitamin/new" -> "vitamin")
                   const hrefParts = action.href.split("/")
                   const itemType = hrefParts[2] as ItemType
-                  bgColorClass = itemColors[itemType]?.DEFAULT || moduleColors[action.module].light
+                  bgColorClass = itemColors[itemType]?.light || moduleColors[action.module].light
+                  iconColorClass = itemColors[itemType]?.text || "text-white"
                 } else {
                   bgColorClass = moduleColors[action.module].light
+                  iconColorClass = "text-white"
                 }
 
                 return (
@@ -211,7 +214,7 @@ export function FAB() {
                     onClick={() => handleAction(action)}
                     className="flex flex-col items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl hover:bg-accent transition-colors min-h-[64px] sm:min-h-[72px]"
                   >
-                    <div className={cn(bgColorClass, "text-white p-2 rounded-full")}>
+                    <div className={cn(bgColorClass, "p-2 rounded-full", iconColorClass)}>
                       {action.icon}
                     </div>
                     <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">

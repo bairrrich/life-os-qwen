@@ -14,7 +14,7 @@ import { db, initializeDatabase } from "@/lib/db"
 import { cn } from "@/lib/utils"
 import { ItemType } from "@/types"
 import type { Item } from "@/types"
-import { itemColors } from "@/lib/theme-colors"
+import { itemColors, itemTypeTabsColors } from "@/lib/theme-colors"
 
 export default function ItemsPage() {
   const t = useTranslations("items")
@@ -86,22 +86,7 @@ export default function ItemsPage() {
   }
 
   const getTabsListColor = (type: ItemType | "all"): string => {
-    switch (type) {
-      case "all":
-        return ""
-      case "vitamin":
-        return "data-[state=active]:bg-[oklch(0.76_0.28_68)] data-[state=active]:text-white"
-      case "medicine":
-        return "data-[state=active]:bg-[oklch(0.68_0.34_18)] data-[state=active]:text-white"
-      case "herb":
-        return "data-[state=active]:bg-[oklch(0.72_0.30_122)] data-[state=active]:text-white"
-      case "cosmetic":
-        return "data-[state=active]:bg-[oklch(0.74_0.31_312)] data-[state=active]:text-white"
-      case "product":
-        return "data-[state=active]:bg-[oklch(0.78_0.26_208)] data-[state=active]:text-white"
-      default:
-        return ""
-    }
+    return itemTypeTabsColors[type as keyof typeof itemTypeTabsColors] || ""
   }
 
   // Статистика

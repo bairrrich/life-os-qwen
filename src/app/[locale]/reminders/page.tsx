@@ -371,7 +371,7 @@ function RemindersContent() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Bell className="h-8 w-8 text-[oklch(0.70_0.30_218)]" />
+                <Bell className="h-8 w-8 text-[var(--color-info)]" />
                 <div>
                   <div className="text-2xl font-bold">{stats.active}</div>
                   <div className="text-xs text-muted-foreground">{t("stats.active")}</div>
@@ -382,7 +382,7 @@ function RemindersContent() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Clock className="h-8 w-8 text-[oklch(0.80_0.28_90)]" />
+                <Clock className="h-8 w-8 text-[var(--color-warning)]" />
                 <div>
                   <div className="text-2xl font-bold">{stats.today}</div>
                   <div className="text-xs text-muted-foreground">{t("stats.today")}</div>
@@ -393,7 +393,7 @@ function RemindersContent() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-8 w-8 text-[oklch(0.74_0.30_138)]" />
+                <CheckCircle2 className="h-8 w-8 text-[var(--color-success)]" />
                 <div>
                   <div className="text-2xl font-bold">{stats.completedToday}</div>
                   <div className="text-xs text-muted-foreground">{t("stats.completed")}</div>
@@ -407,9 +407,9 @@ function RemindersContent() {
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <AlertTriangle className={`h-8 w-8 ${reminderStatsColors.overdue}`} />
+                <AlertTriangle className={`h-8 w-8 ${reminderStatsColors.overdue.text}`} />
                 <div>
-                  <div className={`text-2xl font-bold ${reminderStatsColors.overdue}`}>
+                  <div className={`text-2xl font-bold ${reminderStatsColors.overdue.text}`}>
                     {stats.overdue}
                   </div>
                   <div className="text-xs text-muted-foreground">{t("stats.overdue")}</div>
@@ -420,7 +420,7 @@ function RemindersContent() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <BarChart3 className="h-8 w-8 text-[oklch(0.70_0.30_285)]" />
+                <BarChart3 className="h-8 w-8 text-[var(--color-accent)]" />
                 <div>
                   <div className="text-2xl font-bold">{stats.total}</div>
                   <div className="text-xs text-muted-foreground">{t("stats.total")}</div>
@@ -466,7 +466,7 @@ function RemindersContent() {
             onClick={() => setSmartFilter("overdue")}
             className={
               smartFilter === "overdue"
-                ? `${priorityColors.critical.DEFAULT} hover:bg-[oklch(0.58_0.34_18)]`
+                ? `${priorityColors.critical.DEFAULT} hover:bg-[var(--color-danger)]`
                 : ""
             }
           >
