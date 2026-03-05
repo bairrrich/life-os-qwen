@@ -448,9 +448,9 @@ export const financeColors = {
 }
 
 export const financeTypeColors = {
-  income: "text-[var(--color-success)]",
-  expense: "text-[var(--color-danger)]",
-  transfer: "text-[var(--color-info)]",
+  income: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  expense: "data-[state=active]:bg-[var(--color-danger)] data-[state=active]:text-white",
+  transfer: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
 }
 
 /* Food Source */
@@ -465,10 +465,10 @@ export const foodSourceColors = {
 
 /* Food Type */
 export const foodTypeColors = {
-  breakfast: statusColors.warning,
-  lunch: statusColors.success,
-  dinner: statusColors.info,
-  snack: accentColor,
+  breakfast: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  lunch: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  dinner: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  snack: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
 }
 
 /* Habit Status */
@@ -535,11 +535,11 @@ export const navigationColors = {
   catalog: "text-[var(--color-info)]",
 }
 
-/* Recipe Type Legacy */
+/* Recipe Type */
 export const recipeTypeColorsLegacy = {
-  food: "text-[var(--color-accent)]",
-  drink: "text-[var(--color-info)]",
-  cocktail: "text-[var(--color-accent)]",
+  food: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
+  drink: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  cocktail: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
 }
 
 /* Reminder Priority */
@@ -618,8 +618,8 @@ export const workoutColors = {
 }
 
 export const workoutTypeColors = {
-  strength: "text-[var(--color-danger)]",
-  cardio: "text-[var(--color-info)]",
-  yoga: "text-[var(--color-success)]",
-  stretching: "text-[var(--color-warning)]",
+  strength: "data-[state=active]:bg-[var(--color-danger)] data-[state=active]:text-white",
+  cardio: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  yoga: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  stretching: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
 }

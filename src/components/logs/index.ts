@@ -26,15 +26,15 @@ export {
 // Общие константы
 export const categoryColors: Record<string, string> = {
   // Nutrition
-  Breakfast: foodTypeColors.breakfast.text,
-  Lunch: foodTypeColors.lunch.text,
-  Dinner: foodTypeColors.dinner.text,
-  Snack: foodTypeColors.snack.text,
+  Breakfast: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
+  Lunch: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  Dinner: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  Snack: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
   // Workouts
-  Strength: workoutTypeColors.strength,
-  Cardio: workoutTypeColors.cardio,
-  Yoga: workoutTypeColors.yoga,
-  Stretching: workoutTypeColors.stretching,
+  Strength: "data-[state=active]:bg-[var(--color-danger)] data-[state=active]:text-white",
+  Cardio: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
+  Yoga: "data-[state=active]:bg-[var(--color-success)] data-[state=active]:text-white",
+  Stretching: "data-[state=active]:bg-[var(--color-warning)] data-[state=active]:text-white",
 }
 
 export const financeTypeColors: Record<string, string> = {
