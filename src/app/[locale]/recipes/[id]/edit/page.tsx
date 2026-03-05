@@ -1,0 +1,677 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter, useParams } from "@/lib/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Calculator } from "@/lib/icons"
+import { useTranslations } from "next-intl"
+import { AppLayout } from "@/components/layout/app-layout"
+import { PageActions } from "@/components/shared/page-actions"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Combobox } from "@/components/ui/combobox"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { db, initializeDatabase, getTimestamp } from "@/lib/db"
+import {
+  RecipeIngredients,
+  RecipeSteps,
+  FoodRecipeForm,
+  DrinkRecipeForm,
+  CocktailRecipeForm,
+  recipeTypeColors,
+  type IngredientItem,
+} from "@/components/recipes"
+import { ImageUpload } from "@/components/shared/forms"
+import type {
+  Difficulty,
+  FoodRecipeMetadata,
+  DrinkRecipeMetadata,
+  CocktailRecipeMetadata,
+  RecipeContentExtended,
+  RecipeIngredientItem,
+  RecipeStep,
+  RecipeType,
+} from "@/types"
+import { RecipeType as RecipeTypeEnum } from "@/types"
+
+// Validation messages
+const validationMessages = {
+  title: "Введите название",
+}
+
+// Преобразование пустой строки в 0 для числовых полей
+const emptyStringToZero = z.preprocess((val) => {
+  if (val === "" || val === null || val === undefined) return 0
+  return Number(val)
+}, z.number())
+
+// Recipe schema factory function
+function createRecipeSchema(t: (key: string) => string) {
+  const messages = {
+    title: validationMessages.title,
+  }
+
+  return z.object({
+    title: z.string().min(1, messages.title),
+    description: z.string().optional(),
+    rating: z.preprocess((val) => {
+      if (val === "" || val === null || val === undefined) return 0
+      const num = Number(val)
+      if (isNaN(num)) return 0
+      return num
+    }, z.number().min(0).max(5)),
+    tags: z.string().optional(),
+    personal_notes: z.string().optional(),
+    prep_time_min: emptyStringToZero,
+    cook_time_min: emptyStringToZero,
+    servings: emptyStringToZero,
+    serving_unit: z.string().optional(),
+    difficulty: z.enum(["easy", "medium", "hard", "pro"]).optional(),
+    calories: emptyStringToZero,
+    protein: emptyStringToZero,
+    fat: emptyStringToZero,
+    carbs: emptyStringToZero,
+    sugar: emptyStringToZero,
+    fiber: emptyStringToZero,
+  })
+}
+
+export default function EditRecipePage() {
+  const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+  const t = useTranslations("recipes")
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Recipe specific state
+  const [recipeType, setRecipeType] = useState<RecipeType>(RecipeTypeEnum.FOOD)
+  const [ingredients, setIngredients] = useState<IngredientItem[]>([])
+  const [steps, setSteps] = useState<
+    { id?: string; order: number; text: string; timer_min?: number }[]
+  >([])
+  const [foodMetadata, setFoodMetadata] = useState<FoodRecipeMetadata>({})
+  const [drinkMetadata, setDrinkMetadata] = useState<DrinkRecipeMetadata>({ is_carbonated: false })
+  const [cocktailMetadata, setCocktailMetadata] = useState<CocktailRecipeMetadata>({
+    is_alcoholic: true,
+  })
+
+  // Автоматический расчёт КБЖУ из ингредиентов
+  const calculateNutrition = () => {
+    let totalCalories = 0,
+      totalProtein = 0,
+      totalFat = 0,
+      totalCarbs = 0,
+      totalFiber = 0
+    for (const ing of ingredients) {
+      if (ing.calories_per_100 && ing.amount > 0) {
+        let multiplier = 1
+        const unit = ing.unit.toLowerCase()
+        if (unit === "г" || unit === "гр" || unit === "мл") multiplier = ing.amount / 100
+        else if (unit === "кг" || unit === "л") multiplier = ing.amount * 10
+        else if (unit === "ст.л.") multiplier = (ing.amount * 15) / 100
+        else if (unit === "ч.л.") multiplier = (ing.amount * 5) / 100
+        else if (unit === "стакан") multiplier = (ing.amount * 200) / 100
+        else if (unit === "шт") multiplier = (ing.amount * 100) / 100
+        else multiplier = ing.amount / 100
+        totalCalories += (ing.calories_per_100 || 0) * multiplier
+        totalProtein += (ing.protein_per_100 || 0) * multiplier
+        totalFat += (ing.fat_per_100 || 0) * multiplier
+        totalCarbs += (ing.carbs_per_100 || 0) * multiplier
+        totalFiber += (ing.fiber_per_100 || 0) * multiplier
+      }
+    }
+    return {
+      calories: Math.round(totalCalories),
+      protein: Math.round(totalProtein * 10) / 10,
+      fat: Math.round(totalFat * 10) / 10,
+      carbs: Math.round(totalCarbs * 10) / 10,
+      fiber: Math.round(totalFiber * 10) / 10,
+    }
+  }
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(createRecipeSchema(() => "")),
+    defaultValues: {
+      rating: 0,
+      prep_time_min: 0,
+      cook_time_min: 0,
+      servings: 0,
+      calories: 0,
+      protein: 0,
+      fat: 0,
+      carbs: 0,
+      sugar: 0,
+      fiber: 0,
+      personal_notes: "",
+    },
+  })
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        await initializeDatabase()
+        const content = await db.content.get(id)
+
+        if (content && content.type === "recipe") {
+          const recipe = content as RecipeContentExtended
+
+          // Recipe type
+          setRecipeType(recipe.recipe_type || "food")
+
+          // Recipe fields
+          const baseData: Record<string, unknown> = {
+            title: recipe.title,
+            description: recipe.description || "",
+            rating: recipe.rating ?? 0,
+            tags: recipe.tags?.join(", ") || "",
+            personal_notes: recipe.personal_notes || "",
+            prep_time_min: recipe.prep_time_min ?? 0,
+            cook_time_min: recipe.cook_time_min ?? 0,
+            servings: recipe.servings ?? 0,
+            serving_unit: recipe.serving_unit,
+            difficulty: recipe.difficulty,
+            calories: recipe.calories ?? 0,
+            protein: recipe.protein ?? 0,
+            fat: recipe.fat ?? 0,
+            carbs: recipe.carbs ?? 0,
+            sugar: recipe.sugar ?? 0,
+            fiber: recipe.fiber ?? 0,
+          }
+          reset(baseData)
+
+          // Load ingredients
+          const recipeIngredients = await db.recipeIngredientItems
+            .where("recipe_id")
+            .equals(id)
+            .sortBy("order")
+          setIngredients(
+            recipeIngredients.map((ing) => ({
+              id: ing.id,
+              ingredient_name: ing.ingredient_name,
+              amount: ing.amount,
+              unit: ing.unit,
+              optional: ing.optional,
+              note: ing.note,
+              order: ing.order,
+              calories_per_100: (ing as any).calories_per_100,
+              protein_per_100: (ing as any).protein_per_100,
+              fat_per_100: (ing as any).fat_per_100,
+              carbs_per_100: (ing as any).carbs_per_100,
+              fiber_per_100: (ing as any).fiber_per_100,
+            }))
+          )
+
+          // Load steps
+          const recipeSteps = await db.recipeSteps.where("recipe_id").equals(id).sortBy("order")
+          setSteps(
+            recipeSteps.map((s) => ({
+              id: s.id,
+              order: s.order,
+              text: s.text,
+              timer_min: s.timer_min,
+            }))
+          )
+
+          // Load metadata
+          if (recipe.food_metadata) setFoodMetadata(recipe.food_metadata)
+          if (recipe.drink_metadata) setDrinkMetadata(recipe.drink_metadata)
+          if (recipe.cocktail_metadata) setCocktailMetadata(recipe.cocktail_metadata)
+
+          // Load image_url from recipe or metadata
+          if (recipe.image_url) {
+            if (recipe.recipe_type === "food") {
+              setFoodMetadata((prev) => ({ ...prev, image_url: recipe.image_url }))
+            } else if (recipe.recipe_type === "drink") {
+              setDrinkMetadata((prev) => ({ ...prev, image_url: recipe.image_url }))
+            } else if (recipe.recipe_type === "cocktail") {
+              setCocktailMetadata((prev) => ({ ...prev, image_url: recipe.image_url }))
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load recipe:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [id, reset])
+
+  const onSubmit = async (data: any) => {
+    setIsSaving(true)
+    try {
+      const now = getTimestamp()
+
+      // Определяем image_url из метаданных в зависимости от типа рецепта
+      const imageUrl =
+        recipeType === "food"
+          ? foodMetadata.image_url
+          : recipeType === "drink"
+            ? drinkMetadata.image_url
+            : cocktailMetadata.image_url
+
+      // Update recipe content (using type assertion for RecipeContentExtended fields)
+      await db.content.update(id, {
+        title: data.title,
+        description: data.description,
+        image_url: imageUrl,
+        rating: data.rating,
+        personal_notes: data.personal_notes,
+        tags: data.tags ? data.tags.split(",").map((tag: string) => tag.trim()) : [],
+        recipe_type: recipeType,
+        prep_time_min: data.prep_time_min,
+        cook_time_min: data.cook_time_min,
+        total_time_min: (data.prep_time_min || 0) + (data.cook_time_min || 0),
+        servings: data.servings,
+        serving_unit: data.serving_unit,
+        difficulty: data.difficulty,
+        calories: data.calories,
+        protein: data.protein,
+        fat: data.fat,
+        carbs: data.carbs,
+        sugar: data.sugar,
+        fiber: data.fiber,
+        food_metadata: recipeType === "food" ? foodMetadata : undefined,
+        drink_metadata: recipeType === "drink" ? drinkMetadata : undefined,
+        cocktail_metadata: recipeType === "cocktail" ? cocktailMetadata : undefined,
+        updated_at: now,
+      } as Partial<RecipeContentExtended>)
+
+      // Delete old ingredients and add new ones
+      await db.recipeIngredientItems.where("recipe_id").equals(id).delete()
+      for (const ing of ingredients) {
+        await db.recipeIngredientItems.add({
+          id: crypto.randomUUID(),
+          recipe_id: id,
+          ingredient_name: ing.ingredient_name,
+          amount: ing.amount,
+          unit: ing.unit,
+          optional: ing.optional,
+          note: ing.note,
+          order: ing.order || 0,
+          calories_per_100: ing.calories_per_100,
+          protein_per_100: ing.protein_per_100,
+          fat_per_100: ing.fat_per_100,
+          carbs_per_100: ing.carbs_per_100,
+          fiber_per_100: ing.fiber_per_100,
+          created_at: now,
+          updated_at: now,
+        })
+      }
+
+      // Delete old steps and add new ones
+      await db.recipeSteps.where("recipe_id").equals(id).delete()
+      for (const step of steps) {
+        await db.recipeSteps.add({
+          id: crypto.randomUUID(),
+          recipe_id: id,
+          order: step.order,
+          text: step.text,
+          timer_min: step.timer_min,
+          created_at: now,
+          updated_at: now,
+        })
+      }
+
+      router.push(`/recipes/${id}`)
+    } catch (error) {
+      console.error("Failed to update recipe:", error)
+      alert(t("common.error"))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const onError = (errors: any) => {
+    console.error("Form validation errors:", errors)
+    // Прокрутка к первой ошибке
+    const firstErrorField = Object.keys(errors)[0]
+    if (firstErrorField) {
+      const element = document.querySelector(`[name="${firstErrorField}"]`)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
+        ;(element as HTMLElement).focus()
+      }
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <AppLayout title={t("edit.loading")}>
+        <div className="container mx-auto px-4 py-6">
+          <Card>
+            <CardContent className="p-4 text-center text-muted-foreground">
+              {t("edit.loading")}
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  return (
+    <AppLayout title={t("edit.title")}>
+      <div className="container mx-auto px-4 py-6">
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit(onSubmit, onError)()
+          }}
+        >
+          {/* Recipe Type Selector */}
+          <Card>
+            <CardContent className="p-4">
+              <Tabs
+                value={recipeType}
+                onValueChange={(value) => setRecipeType(value as RecipeType)}
+              >
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="food" className={recipeTypeColors["food"] + " px-1 sm:px-2"}>
+                    <span className="mr-1">🍳</span>
+                    <span className="hidden sm:inline">{t("types.food")}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="drink"
+                    className={recipeTypeColors["drink"] + " px-1 sm:px-2"}
+                  >
+                    <span className="mr-1">☕</span>
+                    <span className="hidden sm:inline">{t("types.drink")}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="cocktail"
+                    className={recipeTypeColors["cocktail"] + " px-1 sm:px-2"}
+                  >
+                    <span className="mr-1">🍸</span>
+                    <span className="hidden sm:inline">{t("types.cocktail")}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Basic Info */}
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.title")} *</label>
+                <input
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder={t("fields.titlePlaceholder")}
+                  {...register("title")}
+                />
+                {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.description")}</label>
+                <textarea
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder={t("fields.descriptionPlaceholder")}
+                  {...register("description")}
+                />
+              </div>
+
+              {/* Изображение */}
+              <ImageUpload
+                imageUrl={
+                  recipeType === "food"
+                    ? foodMetadata.image_url
+                    : recipeType === "drink"
+                      ? drinkMetadata.image_url
+                      : cocktailMetadata.image_url
+                }
+                onChange={(url) => {
+                  if (recipeType === "food") {
+                    setFoodMetadata((prev) => ({ ...prev, image_url: url }))
+                  } else if (recipeType === "drink") {
+                    setDrinkMetadata((prev) => ({ ...prev, image_url: url }))
+                  } else {
+                    setCocktailMetadata((prev) => ({ ...prev, image_url: url }))
+                  }
+                }}
+                label={t("fields.imageUrl")}
+                placeholder={t("fields.imageUrlPlaceholder")}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t("fields.servings")}</label>
+                  <input
+                    type="number"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("servings", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t("fields.servingUnit")}</label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder={t("fields.servingUnitPlaceholder")}
+                    {...register("serving_unit")}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t("fields.prepTime")}</label>
+                  <input
+                    type="number"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("prep_time_min", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t("fields.cookTime")}</label>
+                  <input
+                    type="number"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("cook_time_min", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.difficulty")}</label>
+                <Tabs
+                  value={(watch("difficulty") as string) || ""}
+                  onValueChange={(value) =>
+                    setValue(
+                      "difficulty",
+                      (value as "easy" | "medium" | "hard" | "pro") || undefined
+                    )
+                  }
+                >
+                  <TabsList className="grid grid-cols-4 w-full">
+                    <TabsTrigger value="easy">{t("difficulties.easy")}</TabsTrigger>
+                    <TabsTrigger value="medium">{t("difficulties.medium")}</TabsTrigger>
+                    <TabsTrigger value="hard">{t("difficulties.hard")}</TabsTrigger>
+                    <TabsTrigger value="pro">{t("difficulties.pro")}</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ingredients */}
+          <RecipeIngredients ingredients={ingredients} onChange={setIngredients} />
+
+          {/* Steps */}
+          <RecipeSteps steps={steps} onChange={setSteps} />
+
+          {/* Nutrition */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{t("fields.nutrition")}</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const nutrition = calculateNutrition()
+                    setValue("calories", nutrition.calories || 0)
+                    setValue("protein", nutrition.protein || 0)
+                    setValue("fat", nutrition.fat || 0)
+                    setValue("carbs", nutrition.carbs || 0)
+                    setValue("fiber", nutrition.fiber || 0)
+                  }}
+                  disabled={ingredients.length === 0}
+                >
+                  <Calculator className="h-4 w-4 mr-1" />
+                  {t("ingredients.calculate")}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">
+                    {t("nutrition.calories")}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("calories", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">{t("nutrition.protein")}</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("protein", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">{t("nutrition.fat")}</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("fat", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">{t("nutrition.carbs")}</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("carbs", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">{t("nutrition.sugar")}</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("sugar", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium capitalize">{t("nutrition.fiber")}</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="0"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    {...register("fiber", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Type-specific forms */}
+          {recipeType === "food" && (
+            <FoodRecipeForm metadata={foodMetadata} onChange={setFoodMetadata} />
+          )}
+          {recipeType === "drink" && (
+            <DrinkRecipeForm metadata={drinkMetadata} onChange={setDrinkMetadata} />
+          )}
+          {recipeType === "cocktail" && (
+            <CocktailRecipeForm metadata={cocktailMetadata} onChange={setCocktailMetadata} />
+          )}
+
+          {/* Дополнительно */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("forms.additional")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Рейтинг */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.rating")}</label>
+                <Combobox
+                  options={[
+                    { id: "0", label: "–" },
+                    { id: "1", label: "1" },
+                    { id: "2", label: "2" },
+                    { id: "3", label: "3" },
+                    { id: "4", label: "4" },
+                    { id: "5", label: "5" },
+                  ]}
+                  value={watch("rating")?.toString() || ""}
+                  onChange={(value) => setValue("rating", value ? parseInt(value as string) : 0)}
+                  placeholder="5"
+                  allowCustom={false}
+                  searchable={false}
+                />
+              </div>
+
+              {/* Личные заметки */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.personalNotes")}</label>
+                <textarea
+                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder={t("fields.personalNotesPlaceholder")}
+                  {...register("personal_notes")}
+                />
+              </div>
+
+              {/* Теги */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("fields.tags")}</label>
+                <input
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder={t("fields.tagsPlaceholder")}
+                  {...register("tags")}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <PageActions
+            variant="page"
+            isInForm={true}
+            onCancel={() => router.back()}
+            onSimpleSave={handleSubmit(onSubmit, onError)}
+            isSaving={isSaving}
+          />
+        </form>
+      </div>
+    </AppLayout>
+  )
+}
