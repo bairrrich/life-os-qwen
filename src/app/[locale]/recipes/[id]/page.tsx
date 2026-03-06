@@ -49,9 +49,9 @@ import { Cropper, CropperRef } from "react-advanced-cropper"
 import "react-advanced-cropper/dist/style.css"
 
 const recipeTypeColors: Record<string, string> = {
-  food: recipeColors.food.light,
-  drink: recipeColors.drink.light,
-  cocktail: recipeColors.cocktail.light,
+  food: "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45",
+  drink: "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45",
+  cocktail: "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45",
 }
 
 export default function RecipeDetailPage() {

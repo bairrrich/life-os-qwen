@@ -103,12 +103,12 @@ export const uiBase = {
 ========================================================= */
 
 export const accentColor: ColorScheme = {
-  light: soft("var(--color-warning)"),
-  DEFAULT: solid("var(--color-warning)"),
-  text: "text-[var(--color-warning)]",
-  border: border("var(--color-warning)"),
+  light: soft("var(--color-accent)"),
+  DEFAULT: solid("var(--color-accent)"),
+  text: "text-[var(--color-accent)]",
+  border: border("var(--color-accent)"),
   shadow:
-    "shadow-[0_6px_20px_var(--color-warning)/0.35]",
+    "shadow-[0_6px_20px_var(--color-accent)/0.35]",
 }
 
 /* FAB */
@@ -301,13 +301,28 @@ export const bookColors = {
 ========================================================= */
 
 export const recipeColors = {
-  food: accentColor,
+  food: {
+    light: "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45",
+    DEFAULT: solid("var(--color-warning)"),
+    text: "text-[var(--color-warning)]",
+    border: border("var(--color-warning)"),
+  },
   breakfast: statusColors.warning,
   lunch: statusColors.success,
   dinner: statusColors.info,
   snack: accentColor,
-  drink: statusColors.info,
-  cocktail: accentColor,
+  drink: {
+    light: "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45",
+    DEFAULT: solid("var(--color-info)"),
+    text: "text-[var(--color-info)]",
+    border: border("var(--color-info)"),
+  },
+  cocktail: {
+    light: "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45",
+    DEFAULT: solid("var(--color-accent)"),
+    text: "text-[var(--color-accent)]",
+    border: border("var(--color-accent)"),
+  },
   rating: { fill: "fill-[var(--color-warning)]", DEFAULT: "text-[var(--color-warning)]" },
   calories: { bg: "bg-[var(--color-warning)/0.15]", text: "text-[var(--color-warning)]" },
   cuisine: { bg: "bg-[var(--color-info)/0.15]", text: "text-[var(--color-info)]", border: "border-[var(--color-info)/0.35]" },
@@ -415,12 +430,12 @@ export const recipeTypeTabsColors = {
   cocktail: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
 }
 export const bookStatusColorsLegacy = {
-  reading: "text-[var(--color-info)]",
-  completed: "text-[var(--color-success)]",
-  planned: "text-[var(--color-text-soft)]",
-  abandoned: "text-[var(--color-text-soft)]",
-  paused: "text-[var(--color-warning)]",
-  dropped: "text-[var(--color-text-soft)]",
+  reading: "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45",
+  completed: "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45",
+  planned: "bg-[var(--color-text-soft)]/15 text-[var(--color-text-soft)] border-[var(--color-text-soft)]/45",
+  abandoned: "bg-[var(--color-text-soft)]/15 text-[var(--color-text-soft)] border-[var(--color-text-soft)]/45",
+  paused: "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45",
+  dropped: "bg-[var(--color-text-soft)]/15 text-[var(--color-text-soft)] border-[var(--color-text-soft)]/45",
 }
 
 /* Book Status (alias) */
@@ -537,9 +552,9 @@ export const navigationColors = {
 
 /* Recipe Type */
 export const recipeTypeColorsLegacy = {
-  food: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
-  drink: "data-[state=active]:bg-[var(--color-info)] data-[state=active]:text-white",
-  cocktail: "data-[state=active]:bg-[var(--color-accent)] data-[state=active]:text-white",
+  food: "data-[state=active]:bg-[var(--color-warning)]/15 data-[state=active]:text-[var(--color-warning)] data-[state=active]:border-[var(--color-warning)]/45",
+  drink: "data-[state=active]:bg-[var(--color-info)]/15 data-[state=active]:text-[var(--color-info)] data-[state=active]:border-[var(--color-info)]/45",
+  cocktail: "data-[state=active]:bg-[var(--color-accent)]/15 data-[state=active]:text-[var(--color-accent)] data-[state=active]:border-[var(--color-accent)]/45",
 }
 
 /* Reminder Priority */

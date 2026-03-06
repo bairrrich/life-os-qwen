@@ -73,15 +73,15 @@ export default function ItemsPage() {
   const getTypeColor = (type: ItemType) => {
     switch (type) {
       case "vitamin":
-        return itemColors.vitamin.DEFAULT
+        return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
       case "medicine":
-        return itemColors.medicine.DEFAULT
+        return "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border-[var(--color-danger)]/45"
       case "herb":
-        return itemColors.herb.DEFAULT
+        return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
       case "cosmetic":
-        return itemColors.cosmetic.DEFAULT
+        return "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45"
       case "product":
-        return itemColors.product.DEFAULT
+        return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
     }
   }
 
