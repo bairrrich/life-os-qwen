@@ -475,6 +475,13 @@ async function seedLogs() {
   const workoutCategories = categories.filter((c) => c.type === LogType.WORKOUT)
   const financeCategories = categories.filter((c) => c.type === LogType.FINANCE)
 
+  console.log("seedLogs: categories loaded", {
+    total: categories.length,
+    food: foodCategories.length,
+    workout: workoutCategories.length,
+    finance: financeCategories.length,
+  })
+
   // Units
   const gramUnit = units.find((u) => u.abbreviation === "g") || units[0]
   const kgUnit = units.find((u) => u.abbreviation === "kg") || units[0]
@@ -486,6 +493,8 @@ async function seedLogs() {
   // Food logs (5-7 entries)
   for (let i = 0; i < randomBetween(5, 7); i++) {
     const date = randomISODateInLastWeek()
+    const foodType = randomElement(["breakfast", "lunch", "dinner", "snack"])
+    const category = foodCategories.find((c) => c.name === foodType)
     logs.push({
       id: generateId(),
       type: LogType.FOOD,
@@ -499,7 +508,7 @@ async function seedLogs() {
         "Turkey Sandwich",
         "Yogurt with Muesli",
       ]),
-      category_id: foodCategories.length > 0 ? randomElement(foodCategories).id : undefined,
+      category_id: category?.id,
       quantity: randomBetween(100, 500),
       unit: gramUnit?.abbreviation || "g",
       value: randomBetween(200, 800),
@@ -519,10 +528,11 @@ async function seedLogs() {
   for (let i = 0; i < randomBetween(5, 7); i++) {
     const date = randomISODateInLastWeek()
     const intensity = randomElement(["low", "medium", "high"] as const)
-    const workoutCategory = randomElement(["strength", "cardio", "yoga"])
+    const workoutType = randomElement(["strength", "cardio", "yoga", "stretching"])
+    const category = workoutCategories.find((c) => c.name === workoutType)
 
     let subcategory: StrengthSubcategory | CardioSubcategory | YogaSubcategory | undefined
-    if (workoutCategory === "strength") {
+    if (workoutType === "strength") {
       subcategory = randomElement([
         "chest",
         "back",
@@ -530,15 +540,16 @@ async function seedLogs() {
         "shoulders",
         "arms",
       ] as StrengthSubcategory[])
-    } else if (workoutCategory === "cardio") {
+    } else if (workoutType === "cardio") {
       subcategory = randomElement([
         "running",
         "cycling",
-        "swimming",
         "walking",
       ] as CardioSubcategory[])
-    } else {
+    } else if (workoutType === "yoga") {
       subcategory = randomElement(["hatha", "vinyasa", "yin", "restorative"] as YogaSubcategory[])
+    } else {
+      subcategory = "stretching" as YogaSubcategory
     }
 
     logs.push({
@@ -554,7 +565,7 @@ async function seedLogs() {
         "Interval Training",
         "Strength Training",
       ]),
-      category_id: workoutCategories.length > 0 ? randomElement(workoutCategories).id : undefined,
+      category_id: category?.id,
       quantity: randomBetween(30, 90),
       unit: minUnit?.abbreviation || "min",
       value: randomBetween(200, 600),

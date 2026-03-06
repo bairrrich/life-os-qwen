@@ -119,11 +119,19 @@ export default function NewLogPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
   const [financeType, setFinanceType] = useState<string>("expense")
   const [selectedAccountId, setSelectedAccountId] = useState<string>("")
   const [targetAccountId, setTargetAccountId] = useState<string>("")
   const [workoutIntensity, setWorkoutIntensity] = useState<string>("")
+
+  // Инициализируем selectedCategoryId для food и workout сразу при создании компонента
+  const defaultSelectedCategoryId = type === "food"
+    ? foodTypeOptions[0].value
+    : type === "workout"
+      ? workoutTypeOptions[0].value
+      : ""
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(defaultSelectedCategoryId)
 
   // Состояния для зависимых списков финансов (храним для каждого типа отдельно)
   const [financeValues, setFinanceValues] = useState({
@@ -250,18 +258,12 @@ export default function NewLogPage() {
     async function loadData() {
       await initializeDatabase()
 
-      // Для питания и тренировок используем фиксированные типы
+      // Для питания и тренировок selectedCategoryId уже установлен при инициализации
       if (type === "food") {
-        if (!selectedCategoryId) {
-          setSelectedCategoryId(foodTypeOptions[0].value)
-        }
         return
       }
 
       if (type === "workout") {
-        if (!selectedCategoryId) {
-          setSelectedCategoryId(workoutTypeOptions[0].value)
-        }
         return
       }
 
@@ -377,7 +379,7 @@ export default function NewLogPage() {
   const onSubmit = async (data: FormData) => {
     // Для финансов проверяем обязательные поля
     if (type === "finance") {
-      if (!financeCategory) {
+      if (!selectedCategoryId) {
         setCategoryError(t("finance.category"))
         return
       }
@@ -442,7 +444,7 @@ export default function NewLogPage() {
         type,
         date: `${data.date}T${data.time}:00`, // ISO 8601 format
         title: title,
-        category_id: data.category_id || undefined,
+        category_id: selectedCategoryId, // Используем selectedCategoryId для всех типов
         quantity: data.quantity,
         unit: data.unit,
         value: data.value,
@@ -459,14 +461,12 @@ export default function NewLogPage() {
           protein: foodData.protein,
           fat: foodData.fat,
           carbs: foodData.carbs,
-          food_type: selectedCategoryId as "breakfast" | "lunch" | "dinner" | "snack" | undefined,
         }
       } else if (type === "workout") {
         const workoutData = data as z.infer<typeof workoutSchema>
         metadata = {
           duration: workoutData.duration,
           intensity: workoutData.intensity,
-          workout_type: selectedCategoryId as "strength" | "cardio" | "yoga" | "stretching" | undefined,
           subcategory: workoutSubcategory as
             | StrengthSubcategory
             | CardioSubcategory
@@ -651,16 +651,20 @@ export default function NewLogPage() {
                     }}
                   >
                     <TabsList className="grid grid-cols-4">
-                      {foodTypeOptions.map((opt) => (
-                        <TabsTrigger
-                          key={opt.value}
-                          value={opt.value}
-                          className={categoryColors[opt.label] || ""}
-                        >
-                          <span className="mr-1">{opt.emoji}</span>
-                          <span className="hidden sm:inline">{opt.label}</span>
-                        </TabsTrigger>
-                      ))}
+                      {foodTypeOptions.map((opt) => {
+                        // Преобразуем ключ для categoryColors (с заглавной буквы)
+                        const colorKey = opt.value.charAt(0).toUpperCase() + opt.value.slice(1)
+                        return (
+                          <TabsTrigger
+                            key={opt.value}
+                            value={opt.value}
+                            className={categoryColors[colorKey] || ""}
+                          >
+                            <span className="mr-1">{opt.emoji}</span>
+                            <span className="hidden sm:inline">{opt.label}</span>
+                          </TabsTrigger>
+                        )
+                      })}
                     </TabsList>
                   </Tabs>
                 </div>

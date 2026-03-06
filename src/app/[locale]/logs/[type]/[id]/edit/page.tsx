@@ -298,28 +298,13 @@ export default function EditLogPage() {
             : new Date().toTimeString().slice(0, 5)
 
           // Устанавливаем начальные значения для Tabs
-          // Для food и workout используем metadata (food_type, workout_type)
-          if (type === "food") {
-            const m = log.metadata as FoodMetadata | undefined
-            // Сначала пробуем food_type из metadata, затем category_id как fallback
-            if (m?.food_type) {
-              setSelectedCategoryId(m.food_type as string)
-            } else if (log.category_id) {
+          // Для food и workout используем category_id (название категории в БД)
+          if (type === "food" || type === "workout") {
+            if (log.category_id) {
               setSelectedCategoryId(log.category_id)
             } else {
-              // Если ничего нет, используем breakfast по умолчанию
-              setSelectedCategoryId("breakfast")
-            }
-          } else if (type === "workout") {
-            const m = log.metadata as WorkoutMetadata | undefined
-            // Сначала пробуем workout_type из metadata, затем category_id как fallback
-            if (m?.workout_type) {
-              setSelectedCategoryId(m.workout_type as string)
-            } else if (log.category_id) {
-              setSelectedCategoryId(log.category_id)
-            } else {
-              // Если ничего нет, используем strength по умолчанию
-              setSelectedCategoryId("strength")
+              // Fallback на значения по умолчанию
+              setSelectedCategoryId(type === "food" ? "breakfast" : "strength")
             }
           } else if (log.category_id) {
             setSelectedCategoryId(log.category_id)
@@ -433,9 +418,10 @@ export default function EditLogPage() {
       }
 
       const baseData = {
+        type,
         date: `${data.date}T${data.time}:00`, // ISO 8601 format
         title: title,
-        category_id: data.category_id || undefined,
+        category_id: selectedCategoryId, // Используем selectedCategoryId для всех типов
         quantity: data.quantity,
         unit: data.unit,
         value: data.value,
@@ -457,7 +443,6 @@ export default function EditLogPage() {
           protein: foodData.protein,
           fat: foodData.fat,
           carbs: foodData.carbs,
-          food_type: selectedCategoryId as "breakfast" | "lunch" | "dinner" | "snack" | undefined,
         }
       } else if (type === "workout") {
         const workoutData = data as FormData & {
@@ -467,7 +452,6 @@ export default function EditLogPage() {
         metadata = {
           duration: workoutData.duration,
           intensity: workoutData.intensity,
-          workout_type: selectedCategoryId as "strength" | "cardio" | "yoga" | "stretching" | undefined,
           subcategory: workoutSubcategory as
             | StrengthSubcategory
             | CardioSubcategory
@@ -609,16 +593,20 @@ export default function EditLogPage() {
                     }}
                   >
                     <TabsList className="grid grid-cols-4">
-                      {foodTypeOptions.map((opt) => (
-                        <TabsTrigger
-                          key={opt.value}
-                          value={opt.value}
-                          className={categoryColors[opt.label] || ""}
-                        >
-                          <span className="mr-1">{opt.emoji}</span>
-                          <span className="hidden sm:inline">{opt.label}</span>
-                        </TabsTrigger>
-                      ))}
+                      {foodTypeOptions.map((opt) => {
+                        // Преобразуем ключ для categoryColors (с заглавной буквы)
+                        const colorKey = opt.value.charAt(0).toUpperCase() + opt.value.slice(1)
+                        return (
+                          <TabsTrigger
+                            key={opt.value}
+                            value={opt.value}
+                            className={categoryColors[colorKey] || ""}
+                          >
+                            <span className="mr-1">{opt.emoji}</span>
+                            <span className="hidden sm:inline">{opt.label}</span>
+                          </TabsTrigger>
+                        )
+                      })}
                     </TabsList>
                   </Tabs>
                 </div>
@@ -663,35 +651,6 @@ export default function EditLogPage() {
                           </TabsTrigger>
                         )
                       })}
-                    </TabsList>
-                  </Tabs>
-                </div>
-              )}
-
-              {/* Tabs для категорий финансов */}
-              {type === "finance" && categories.length > 0 && (
-                <div className="space-y-2">
-                  <Label>{t("edit.type")}</Label>
-                  <Tabs
-                    value={selectedCategoryId}
-                    onValueChange={(value) => {
-                      setSelectedCategoryId(value)
-                      setValue("category_id", value)
-                    }}
-                  >
-                    <TabsList
-                      className="grid w-full"
-                      style={{ gridTemplateColumns: `repeat(${categories.length}, 1fr)` }}
-                    >
-                      {categories.map((cat) => (
-                        <TabsTrigger
-                          key={cat.id}
-                          value={cat.id}
-                          className={categoryColors[cat.name] || ""}
-                        >
-                          {cat.name}
-                        </TabsTrigger>
-                      ))}
                     </TabsList>
                   </Tabs>
                 </div>

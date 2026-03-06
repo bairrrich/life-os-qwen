@@ -92,7 +92,7 @@ export default function LogsPage() {
     }
   }
 
-  const getLogTypeColor = (type: LogType, financeType?: string, foodType?: string, workoutType?: string, subcategory?: string) => {
+  const getLogTypeColor = (type: LogType, financeType?: string, categoryId?: string, subcategory?: string) => {
     // Для финансовых операций учитываем тип транзакции
     if (type === "finance") {
       if (financeType === "income") {
@@ -122,16 +122,28 @@ export default function LogsPage() {
       }
     }
     
-    // Для питания учитываем тип приёма пищи (food_type)
-    if (type === "food" && foodType) {
-      if (foodType === "breakfast") {
+    // Для питания и тренировок учитываем category_id (название категории)
+    if (type === "food" && categoryId) {
+      if (categoryId === "breakfast") {
         return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
-      } else if (foodType === "lunch") {
+      } else if (categoryId === "lunch") {
         return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
-      } else if (foodType === "dinner") {
+      } else if (categoryId === "dinner") {
         return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
-      } else if (foodType === "snack") {
+      } else if (categoryId === "snack") {
         return "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45"
+      }
+    }
+    
+    if (type === "workout" && categoryId) {
+      if (categoryId === "strength") {
+        return "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border-[var(--color-danger)]/45"
+      } else if (categoryId === "cardio") {
+        return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+      } else if (categoryId === "yoga") {
+        return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+      } else if (categoryId === "stretching") {
+        return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
       }
     }
     
@@ -287,8 +299,7 @@ export default function LogsPage() {
                     {periodLogs.map((log) => {
                       const TypeIcon = getTypeIcon(log.type)
                       const financeType = log.type === "finance" ? log.metadata?.finance_type as string | undefined : undefined
-                      const foodType = log.type === "food" ? log.metadata?.food_type as string | undefined : undefined
-                      const workoutType = log.type === "workout" ? log.metadata?.workout_type as string | undefined : undefined
+                      const categoryId = log.category_id
                       const subcategory = log.type === "workout" ? log.metadata?.subcategory as string | undefined : undefined
                       return (
                         <Link
@@ -299,7 +310,7 @@ export default function LogsPage() {
                           <Card className="hover:bg-accent transition-colors">
                             <CardContent className="p-3 flex items-center gap-3">
                               <div
-                                className={`flex h-9 w-9 items-center justify-center rounded-xl ${getLogTypeColor(log.type, financeType, foodType, workoutType, subcategory)}`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-xl ${getLogTypeColor(log.type, financeType, categoryId, subcategory)}`}
                                 aria-hidden="true"
                               >
                                 <TypeIcon className="h-4 w-4" />
