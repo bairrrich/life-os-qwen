@@ -28,7 +28,7 @@ import { StreakWidget } from "@/components/shared/streak-widget"
 import { Onboarding } from "@/components/shared/onboarding"
 import { db, initializeDatabase } from "@/lib/db"
 import type { Log, Goal, WaterLog, HabitLog } from "@/types"
-import { moduleColors, type ModuleType } from "@/lib/theme-colors"
+import { type ModuleType } from "@/lib/theme-colors"
 import { getStaticEntityTranslation } from "@/lib/db"
 
 // Quick action cards data - labels will be translated in component
@@ -117,15 +117,6 @@ const trackerLinks = [
   },
 ]
 
-// Type colors mapping for recent activity
-const typeColors: Record<string, ModuleType> = {
-  food: "food",
-  workout: "workout",
-  finance: "finance",
-  finance_income: "finance",
-  finance_expense: "finance",
-}
-
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "food":
@@ -136,6 +127,100 @@ const getTypeIcon = (type: string) => {
       return Wallet
     default:
       return Utensils
+  }
+}
+
+const getQuickActionColor = (module: ModuleType) => {
+  switch (module) {
+    case "food":
+      return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
+    case "workout":
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    case "finance":
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    case "books":
+      return "bg-[var(--color-text-soft)]/15 text-[var(--color-text-soft)] border-[var(--color-text-soft)]/45"
+    case "recipes":
+      return "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45"
+    default:
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+  }
+}
+
+const getTrackerColor = (module: ModuleType) => {
+  switch (module) {
+    case "water":
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    case "sleep":
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    case "mood":
+      return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
+    case "goals":
+      return "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45"
+    case "habits":
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    case "logs":
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    case "settings":
+      return "bg-[var(--color-text-soft)]/15 text-[var(--color-text-soft)] border-[var(--color-text-soft)]/45"
+    default:
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+  }
+}
+
+const getRecentActivityColor = (type: string, financeType?: string, foodType?: string, workoutType?: string, subcategory?: string) => {
+  // Для финансовых операций учитываем тип транзакции
+  if (type === "finance") {
+    if (financeType === "income") {
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    } else if (financeType === "expense") {
+      return "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border-[var(--color-danger)]/45"
+    } else if (financeType === "transfer") {
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    }
+  }
+  
+  // Для тренировок учитываем подкатегорию
+  if (type === "workout" && subcategory) {
+    // Силовые упражнения
+    const strengthSubcats = ["chest", "back", "legs", "shoulders", "arms", "core", "free_weights", "machines", "bodyweight", "functional"]
+    // Кардио
+    const cardioSubcats = ["running", "walking", "cycling", "rowing", "jumping", "liss", "hiit", "tabata"]
+    // Йога
+    const yogaSubcats = ["hatha", "vinyasa", "ashtanga", "kundalini", "iyengar", "stretching", "power", "relax", "breathing", "meditation", "beginner", "intermediate", "advanced"]
+    
+    if (strengthSubcats.includes(subcategory)) {
+      return "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border-[var(--color-danger)]/45"
+    } else if (cardioSubcats.includes(subcategory)) {
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    } else if (yogaSubcats.includes(subcategory)) {
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    }
+  }
+  
+  // Для питания учитываем тип приёма пищи (food_type)
+  if (type === "food" && foodType) {
+    if (foodType === "breakfast") {
+      return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
+    } else if (foodType === "lunch") {
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    } else if (foodType === "dinner") {
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    } else if (foodType === "snack") {
+      return "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/45"
+    }
+  }
+  
+  // Для остальных типов - цвета по умолчанию
+  switch (type) {
+    case "food":
+      return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
+    case "workout":
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+    case "finance":
+      return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+    default:
+      return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
   }
 }
 
@@ -498,10 +583,10 @@ export default function HomePage() {
                 aria-label={`${t("quickActionsTitle")}: ${tNav(action.translationKey)}`}
               >
                 <div
-                  className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl ${moduleColors[action.module].light}`}
+                  className={`flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl ${getQuickActionColor(action.module)}`}
                   aria-hidden="true"
                 >
-                  <action.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${moduleColors[action.module].text}`} />
+                  <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium">
                   {tNav(action.translationKey)}
@@ -554,10 +639,10 @@ export default function HomePage() {
                 aria-label={`${t("trackers")}: ${tNav(tracker.translationKey)}`}
               >
                 <div
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${moduleColors[tracker.module].light}`}
+                  className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${getTrackerColor(tracker.module)}`}
                   aria-hidden="true"
                 >
-                  <tracker.icon className={`h-5 w-5 ${moduleColors[tracker.module].text}`} />
+                  <tracker.icon className="h-5 w-5" />
                 </div>
                 <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">
                   {tNav(tracker.translationKey)}
@@ -582,12 +667,10 @@ export default function HomePage() {
             <div className="flex flex-col gap-2">
               {recentLogs.map((log) => {
                 const TypeIcon = getTypeIcon(log.type)
-                // Determine module for colors based on log type
-                let moduleKey: ModuleType = typeColors[log.type] || "logs"
-                if (log.type === "finance") {
-                  moduleKey = "finance"
-                }
-                const colors = moduleColors[moduleKey]
+                const financeType = log.type === "finance" ? log.metadata?.finance_type as string | undefined : undefined
+                const foodType = log.type === "food" ? log.metadata?.food_type as string | undefined : undefined
+                const workoutType = log.type === "workout" ? log.metadata?.workout_type as string | undefined : undefined
+                const subcategory = log.type === "workout" ? log.metadata?.subcategory as string | undefined : undefined
                 return (
                   <Link
                     key={log.id}
@@ -597,10 +680,10 @@ export default function HomePage() {
                     <Card className="hover:bg-accent transition-colors">
                       <CardContent className="p-3 flex items-center gap-3">
                         <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl ${colors.light}`}
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl ${getRecentActivityColor(log.type, financeType, foodType, workoutType, subcategory)}`}
                           aria-hidden="true"
                         >
-                          <TypeIcon className={`h-4 w-4 ${colors.text}`} />
+                          <TypeIcon className="h-4 w-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-sm truncate">

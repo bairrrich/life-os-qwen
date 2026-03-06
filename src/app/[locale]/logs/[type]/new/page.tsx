@@ -252,14 +252,16 @@ export default function NewLogPage() {
 
       // Для питания и тренировок используем фиксированные типы
       if (type === "food") {
-        setSelectedCategoryId(foodTypeOptions[0].value)
-        setValue("category_id", foodTypeOptions[0].value)
+        if (!selectedCategoryId) {
+          setSelectedCategoryId(foodTypeOptions[0].value)
+        }
         return
       }
 
       if (type === "workout") {
-        setSelectedCategoryId(workoutTypeOptions[0].value)
-        setValue("category_id", workoutTypeOptions[0].value)
+        if (!selectedCategoryId) {
+          setSelectedCategoryId(workoutTypeOptions[0].value)
+        }
         return
       }
 
@@ -457,12 +459,14 @@ export default function NewLogPage() {
           protein: foodData.protein,
           fat: foodData.fat,
           carbs: foodData.carbs,
+          food_type: selectedCategoryId as "breakfast" | "lunch" | "dinner" | "snack" | undefined,
         }
       } else if (type === "workout") {
         const workoutData = data as z.infer<typeof workoutSchema>
         metadata = {
           duration: workoutData.duration,
           intensity: workoutData.intensity,
+          workout_type: selectedCategoryId as "strength" | "cardio" | "yoga" | "stretching" | undefined,
           subcategory: workoutSubcategory as
             | StrengthSubcategory
             | CardioSubcategory
@@ -644,7 +648,6 @@ export default function NewLogPage() {
                     value={selectedCategoryId}
                     onValueChange={(value) => {
                       setSelectedCategoryId(value)
-                      setValue("category_id", value)
                     }}
                   >
                     <TabsList className="grid grid-cols-4">

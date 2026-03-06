@@ -56,6 +56,21 @@ import type {
   WorkoutGoal,
 } from "@/types"
 
+// Фиксированные типы для питания и тренировок
+const foodTypeOptions = [
+  { value: "breakfast", label: "Breakfast", emoji: "🥐" },
+  { value: "lunch", label: "Lunch", emoji: "🍲" },
+  { value: "dinner", label: "Dinner", emoji: "🥪" },
+  { value: "snack", label: "Snack", emoji: "☕" },
+]
+
+const workoutTypeOptions = [
+  { value: "strength" },
+  { value: "cardio" },
+  { value: "yoga" },
+  { value: "stretching" },
+]
+
 // Messages for validation (will be used inside component with translations)
 const validationMessages = {
   date: "Выберите дату",
@@ -283,7 +298,30 @@ export default function EditLogPage() {
             : new Date().toTimeString().slice(0, 5)
 
           // Устанавливаем начальные значения для Tabs
-          if (log.category_id) {
+          // Для food и workout используем metadata (food_type, workout_type)
+          if (type === "food") {
+            const m = log.metadata as FoodMetadata | undefined
+            // Сначала пробуем food_type из metadata, затем category_id как fallback
+            if (m?.food_type) {
+              setSelectedCategoryId(m.food_type as string)
+            } else if (log.category_id) {
+              setSelectedCategoryId(log.category_id)
+            } else {
+              // Если ничего нет, используем breakfast по умолчанию
+              setSelectedCategoryId("breakfast")
+            }
+          } else if (type === "workout") {
+            const m = log.metadata as WorkoutMetadata | undefined
+            // Сначала пробуем workout_type из metadata, затем category_id как fallback
+            if (m?.workout_type) {
+              setSelectedCategoryId(m.workout_type as string)
+            } else if (log.category_id) {
+              setSelectedCategoryId(log.category_id)
+            } else {
+              // Если ничего нет, используем strength по умолчанию
+              setSelectedCategoryId("strength")
+            }
+          } else if (log.category_id) {
             setSelectedCategoryId(log.category_id)
           }
 
@@ -419,6 +457,7 @@ export default function EditLogPage() {
           protein: foodData.protein,
           fat: foodData.fat,
           carbs: foodData.carbs,
+          food_type: selectedCategoryId as "breakfast" | "lunch" | "dinner" | "snack" | undefined,
         }
       } else if (type === "workout") {
         const workoutData = data as FormData & {
@@ -428,6 +467,7 @@ export default function EditLogPage() {
         metadata = {
           duration: workoutData.duration,
           intensity: workoutData.intensity,
+          workout_type: selectedCategoryId as "strength" | "cardio" | "yoga" | "stretching" | undefined,
           subcategory: workoutSubcategory as
             | StrengthSubcategory
             | CardioSubcategory
@@ -558,8 +598,78 @@ export default function EditLogPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Tabs для категорий питания и тренировок */}
-              {(type === "food" || type === "workout") && categories.length > 0 && (
+              {/* Tabs для типов питания */}
+              {type === "food" && (
+                <div className="space-y-2">
+                  <Label>{t("edit.type")}</Label>
+                  <Tabs
+                    value={selectedCategoryId}
+                    onValueChange={(value) => {
+                      setSelectedCategoryId(value)
+                    }}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      {foodTypeOptions.map((opt) => (
+                        <TabsTrigger
+                          key={opt.value}
+                          value={opt.value}
+                          className={categoryColors[opt.label] || ""}
+                        >
+                          <span className="mr-1">{opt.emoji}</span>
+                          <span className="hidden sm:inline">{opt.label}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+              )}
+
+              {/* Tabs для типов тренировок */}
+              {type === "workout" && (
+                <div className="space-y-2">
+                  <Label>{t("edit.type")}</Label>
+                  <Tabs
+                    value={selectedCategoryId}
+                    onValueChange={(value) => {
+                      setSelectedCategoryId(value)
+                      // Сбрасываем подкатегорию при смене типа тренировки
+                      setWorkoutSubcategory("")
+                      setWorkoutEquipment("")
+                      setWorkoutGoal("")
+                    }}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      {workoutTypeOptions.map((opt) => {
+                        const labelKey = opt.value.charAt(0).toUpperCase() + opt.value.slice(1)
+                        const emojiMap: Record<string, string> = {
+                          strength: "💪",
+                          cardio: "🏃",
+                          yoga: "🧘",
+                          stretching: "🤸",
+                        }
+                        return (
+                          <TabsTrigger
+                            key={opt.value}
+                            value={opt.value}
+                            className={cn(
+                              categoryColors[labelKey] || "",
+                              "text-xs sm:text-sm min-w-0 px-1 sm:px-2"
+                            )}
+                          >
+                            <span className="mr-1 flex-shrink-0">{emojiMap[opt.value] || ""}</span>
+                            <span className="hidden sm:inline truncate">
+                              {t(`workout.types.${opt.value}`)}
+                            </span>
+                          </TabsTrigger>
+                        )
+                      })}
+                    </TabsList>
+                  </Tabs>
+                </div>
+              )}
+
+              {/* Tabs для категорий финансов */}
+              {type === "finance" && categories.length > 0 && (
                 <div className="space-y-2">
                   <Label>{t("edit.type")}</Label>
                   <Tabs
@@ -567,12 +677,6 @@ export default function EditLogPage() {
                     onValueChange={(value) => {
                       setSelectedCategoryId(value)
                       setValue("category_id", value)
-                      // Сбрасываем подкатегорию при смене типа тренировки
-                      if (type === "workout") {
-                        setWorkoutSubcategory("")
-                        setWorkoutEquipment("")
-                        setWorkoutGoal("")
-                      }
                     }}
                   >
                     <TabsList

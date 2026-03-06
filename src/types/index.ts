@@ -276,6 +276,7 @@ export interface FoodMetadata {
   protein?: number
   fat?: number
   carbs?: number
+  food_type?: "breakfast" | "lunch" | "dinner" | "snack"
 }
 
 // ============================================
@@ -370,6 +371,9 @@ export interface WorkoutMetadata {
   duration?: number // Длительность в минутах
   intensity?: "low" | "medium" | "high"
   exercise_id?: UUID
+
+  // Тип тренировки
+  workout_type?: "strength" | "cardio" | "yoga" | "stretching"
 
   // Подкатегория в зависимости от типа тренировки
   subcategory?: StrengthSubcategory | CardioSubcategory | YogaSubcategory
