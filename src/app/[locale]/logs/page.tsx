@@ -15,7 +15,7 @@ import { LogType } from "@/types"
 import type { Log } from "@/types"
 import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
-import { logTypeColors, logTypeTabsColors, statColors } from "@/lib/theme-colors"
+import { logTypeTabsColors, statColors } from "@/lib/theme-colors"
 
 export default function LogsPage() {
   const t = useTranslations("logs")
@@ -75,15 +75,6 @@ export default function LogsPage() {
     finance: t("types.finance"),
   }
 
-  const typeColors: Record<string, string> = {
-    food: logTypeColors.food.DEFAULT,
-    workout: logTypeColors.workout.DEFAULT,
-    finance: logTypeColors.finance.DEFAULT,
-    finance_income: logTypeColors.finance_income.DEFAULT,
-    finance_expense: logTypeColors.finance_expense.DEFAULT,
-    finance_transfer: logTypeColors.finance_transfer.DEFAULT,
-  }
-
   const getTabsListColor = (type: LogType | "all"): string => {
     return logTypeTabsColors[type as keyof typeof logTypeTabsColors] || ""
   }
@@ -98,6 +89,30 @@ export default function LogsPage() {
         return Wallet
       default:
         return Utensils
+    }
+  }
+
+  const getLogTypeColor = (type: LogType, financeType?: string) => {
+    // Для финансовых операций учитываем тип транзакции
+    if (type === "finance") {
+      if (financeType === "income") {
+        return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+      } else if (financeType === "expense") {
+        return "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border-[var(--color-danger)]/45"
+      } else if (financeType === "transfer") {
+        return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+      }
+    }
+    // Для остальных типов
+    switch (type) {
+      case "food":
+        return "bg-[var(--color-warning)]/15 text-[var(--color-warning)] border-[var(--color-warning)]/45"
+      case "workout":
+        return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
+      case "finance":
+        return "bg-[var(--color-success)]/15 text-[var(--color-success)] border-[var(--color-success)]/45"
+      default:
+        return "bg-[var(--color-info)]/15 text-[var(--color-info)] border-[var(--color-info)]/45"
     }
   }
 
@@ -239,21 +254,7 @@ export default function LogsPage() {
                   <div className="flex flex-col gap-2">
                     {periodLogs.map((log) => {
                       const TypeIcon = getTypeIcon(log.type)
-                      // Определяем цвет для финансов по типу транзакции
-                      let colorKey: string = log.type
-                      if (log.type === "finance" && log.metadata?.finance_type === "income") {
-                        colorKey = "finance_income"
-                      } else if (
-                        log.type === "finance" &&
-                        log.metadata?.finance_type === "expense"
-                      ) {
-                        colorKey = "finance_expense"
-                      } else if (
-                        log.type === "finance" &&
-                        log.metadata?.finance_type === "transfer"
-                      ) {
-                        colorKey = "finance_transfer"
-                      }
+                      const financeType = log.type === "finance" ? log.metadata?.finance_type as string | undefined : undefined
                       return (
                         <Link
                           key={log.id}
@@ -263,7 +264,7 @@ export default function LogsPage() {
                           <Card className="hover:bg-accent transition-colors">
                             <CardContent className="p-3 flex items-center gap-3">
                               <div
-                                className={`flex h-9 w-9 items-center justify-center rounded-xl ${typeColors[colorKey] || "bg-muted"}`}
+                                className={`flex h-9 w-9 items-center justify-center rounded-xl ${getLogTypeColor(log.type, financeType)}`}
                                 aria-hidden="true"
                               >
                                 <TypeIcon className="h-4 w-4" />
